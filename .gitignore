@@ -1,0 +1,4 @@
+.env
+config.json
+.nanobot/
+node_modules/
