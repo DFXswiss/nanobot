@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "Dockerfile"
+      - "entrypoint.sh"
+      - "workspace/**"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
@@ -47,6 +49,6 @@ jobs:
       - name: Update Container App
         run: |
           az containerapp update \
-            --name ca-dfx-nbt-prd \
-            --resource-group rg-dfx-api-prd \
+            --name ${{ vars.AZURE_CONTAINER_APP }} \
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
             --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }}

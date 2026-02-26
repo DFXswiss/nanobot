@@ -28,11 +28,15 @@ RUN npm install -g @modelcontextprotocol/server-filesystem
 # Chromium needs --no-sandbox in containers (the container IS the sandbox)
 ENV PLAYWRIGHT_CHROMIUM_SANDBOX=false
 
-# Default workspace files (overridden when Azure file share is mounted)
-COPY workspace/ /root/.nanobot/workspace/
+# Workspace defaults (copied into mount at startup by entrypoint)
+COPY workspace/ /opt/nanobot/defaults/workspace/
+
+# Entrypoint generates config.json from env vars and copies workspace defaults
+COPY entrypoint.sh /opt/nanobot/entrypoint.sh
+RUN chmod +x /opt/nanobot/entrypoint.sh
 
 VOLUME ["/root/.nanobot"]
 EXPOSE 18790
 
-ENTRYPOINT ["nanobot"]
+ENTRYPOINT ["/opt/nanobot/entrypoint.sh"]
 CMD ["gateway"]

@@ -27,7 +27,6 @@ services:
       - ~/.nanobot:/root/.nanobot
     env_file:
       - .env
-    entrypoint: ["nanobot"]
     command: ["status"]
     stdin_open: true
     tty: true
