@@ -81,10 +81,6 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
 - `DOCKER_USERNAME` / `DOCKER_PASSWORD` — Docker Hub push access
 - `DFX_PRD_CREDENTIALS` — Service principal JSON
 
-**Required GitHub Variables:**
-- `AZURE_CONTAINER_APP` — Container App name
-- `AZURE_RESOURCE_GROUP` — Resource group name
-
 ## Tools
 
 | Tool | How | Notes |

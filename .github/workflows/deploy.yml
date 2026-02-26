@@ -15,6 +15,8 @@ permissions:
 
 env:
   DOCKER_IMAGE: dfxswiss/nanobot
+  AZURE_RESOURCE_GROUP: rg-dfx-api-prd
+  AZURE_CONTAINER_APP: ca-dfx-nbt-prd
   DEPLOY_INFO: ${{ github.ref_name }}-${{ github.sha }}
 
 jobs:
@@ -53,8 +55,8 @@ jobs:
       - name: Get previous image
         id: previous
         env:
-          CONTAINER_APP: ${{ vars.AZURE_CONTAINER_APP }}
-          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          CONTAINER_APP: ${{ env.AZURE_CONTAINER_APP }}
+          RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
         run: |
           image=$(az containerapp show \
             --name "$CONTAINER_APP" \
@@ -64,8 +66,8 @@ jobs:
 
       - name: Update Container App
         env:
-          CONTAINER_APP: ${{ vars.AZURE_CONTAINER_APP }}
-          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          CONTAINER_APP: ${{ env.AZURE_CONTAINER_APP }}
+          RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
         run: |
           az containerapp update \
             --name "$CONTAINER_APP" \
@@ -75,8 +77,8 @@ jobs:
 
       - name: Verify deployment
         env:
-          CONTAINER_APP: ${{ vars.AZURE_CONTAINER_APP }}
-          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          CONTAINER_APP: ${{ env.AZURE_CONTAINER_APP }}
+          RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
           PREVIOUS_IMAGE: ${{ steps.previous.outputs.image }}
         run: |
           for i in 1 2 3 4 5; do
