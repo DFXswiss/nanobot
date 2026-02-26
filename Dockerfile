@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# System deps: git, Node.js 20, GitHub CLI
+# System deps: git, Node.js 20, GitHub CLI, jq
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl git gnupg && \
+    apt-get install -y --no-install-recommends curl git gnupg jq procps && \
     # Node.js 20 (required for MCP servers via npx)
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
@@ -39,6 +39,9 @@ RUN chmod +x /opt/nanobot/entrypoint.sh
 
 VOLUME ["/root/.nanobot"]
 EXPOSE 18790
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD pgrep -f "nanobot" > /dev/null || exit 1
 
 ENTRYPOINT ["/opt/nanobot/entrypoint.sh"]
 CMD ["gateway"]

@@ -20,19 +20,21 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           push: true
           tags: |
@@ -42,13 +44,53 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Azure Login
-        uses: azure/login@v2
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Get previous image
+        id: previous
+        env:
+          CONTAINER_APP: ${{ vars.AZURE_CONTAINER_APP }}
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+        run: |
+          image=$(az containerapp show \
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "properties.template.containers[0].image" -o tsv)
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+
       - name: Update Container App
+        env:
+          CONTAINER_APP: ${{ vars.AZURE_CONTAINER_APP }}
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
         run: |
           az containerapp update \
-            --name ${{ vars.AZURE_CONTAINER_APP }} \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$DOCKER_IMAGE:${{ github.sha }}"
+
+      - name: Verify deployment
+        env:
+          CONTAINER_APP: ${{ vars.AZURE_CONTAINER_APP }}
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          PREVIOUS_IMAGE: ${{ steps.previous.outputs.image }}
+        run: |
+          for i in 1 2 3 4 5; do
+            status=$(az containerapp show \
+              --name "$CONTAINER_APP" \
+              --resource-group "$RESOURCE_GROUP" \
+              --query "properties.runningStatus" -o tsv 2>/dev/null || echo "Unknown")
+            if [ "$status" = "Running" ]; then
+              echo "Deployment healthy"
+              exit 0
+            fi
+            echo "Attempt $i: status=$status, waiting 15s..."
+            sleep 15
+          done
+          echo "::error::Deployment failed — rolling back to $PREVIOUS_IMAGE"
+          az containerapp update \
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$PREVIOUS_IMAGE"
+          exit 1

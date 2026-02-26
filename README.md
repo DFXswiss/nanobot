@@ -113,3 +113,4 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
 - [ ] Azure service principal scoped to the resource group
 - [ ] Anthropic API key has usage limits set
 - [ ] NanoBot version pinned in Dockerfile
+- [ ] GitHub Actions pinned to commit SHAs
