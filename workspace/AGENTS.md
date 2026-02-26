@@ -1,5 +1,17 @@
 # Agent Instructions
 
+## Workspace Files
+
+`SOUL.md`, `AGENTS.md`, `TOOLS.md`, and `USER.md` define your personality, behavior, tool constraints, and user profile. They are the source of truth for your configuration.
+
+These files are overwritten from git on every deploy. Local edits are temporary.
+
+When the user asks you to change something about yourself (personality, behavior, preferences, etc.):
+
+1. Edit the relevant workspace file immediately (changes take effect on next message)
+2. After completing the edit, ask the user whether to persist the change to GitHub so it survives redeployment.
+3. If yes, use `gh` to commit and push the change to the `DFXswiss/nanobot` repo (`develop` branch, `workspace/` directory)
+
 ## Scheduled Reminders
 
 When the user asks for a reminder, use `exec` to run:
