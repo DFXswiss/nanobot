@@ -52,53 +52,31 @@ jobs:
         with:
           creds: ${{ secrets.DFX_PRD_CREDENTIALS }}
 
-      - name: Get previous image
+      - name: Get current revision
         id: previous
-        env:
-          CONTAINER_APP: ${{ env.AZURE_CONTAINER_APP }}
-          RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
         run: |
-          image=$(az containerapp show \
-            --name "$CONTAINER_APP" \
-            --resource-group "$RESOURCE_GROUP" \
-            --query "properties.template.containers[0].image" -o tsv)
-          echo "image=$image" >> "$GITHUB_OUTPUT"
+          REVISION=$(az containerapp revision list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_CONTAINER_APP }} \
+            --query "[?properties.active].name" \
+            --output tsv | head -1)
+          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
 
       - name: Update Container App
-        env:
-          CONTAINER_APP: ${{ env.AZURE_CONTAINER_APP }}
-          RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
         run: |
           az containerapp update \
-            --name "$CONTAINER_APP" \
-            --resource-group "$RESOURCE_GROUP" \
-            --image "$DOCKER_IMAGE:${{ github.sha }}" \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_CONTAINER_APP }} \
+            --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }} \
             --set-env-vars DEPLOY_INFO=${{ env.DEPLOY_INFO }}
 
-      - name: Verify deployment
-        env:
-          CONTAINER_APP: ${{ env.AZURE_CONTAINER_APP }}
-          RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
-          PREVIOUS_IMAGE: ${{ steps.previous.outputs.image }}
+      - name: Deactivate previous revision
+        if: steps.previous.outputs.revision != ''
         run: |
-          for i in 1 2 3 4 5; do
-            status=$(az containerapp show \
-              --name "$CONTAINER_APP" \
-              --resource-group "$RESOURCE_GROUP" \
-              --query "properties.runningStatus" -o tsv 2>/dev/null || echo "Unknown")
-            if [ "$status" = "Running" ]; then
-              echo "Deployment healthy"
-              exit 0
-            fi
-            echo "Attempt $i: status=$status, waiting 15s..."
-            sleep 15
-          done
-          echo "::error::Deployment failed — rolling back to $PREVIOUS_IMAGE"
-          az containerapp update \
-            --name "$CONTAINER_APP" \
-            --resource-group "$RESOURCE_GROUP" \
-            --image "$PREVIOUS_IMAGE"
-          exit 1
+          az containerapp revision deactivate \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_CONTAINER_APP }} \
+            --revision ${{ steps.previous.outputs.revision }}
 
       - name: Logout from Azure
         run: az logout
