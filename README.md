@@ -27,15 +27,16 @@ All configuration is driven by environment variables. The entrypoint script gene
 
 ### Workspace files
 
-System prompts are assembled from markdown files in `workspace/`:
+NanoBot loads these markdown files from `workspace/` into every system prompt:
 
 | File | Purpose |
 |------|---------|
-| `SOUL.md` | Agent personality and behavior guidelines |
-| `USER.md` | User context (optional) |
-| `AGENTS.md` | Role definitions (optional) |
+| `SOUL.md` | Personality, values, communication style |
+| `AGENTS.md` | Operational behavior (cron, heartbeat, resource limits) |
+| `TOOLS.md` | Tool-specific constraints and safety notes |
+| `USER.md` | Team profile and preferences |
 
-These are baked into the image and auto-deployed on each restart. Edit them in git and push to update.
+These are baked into the image and copied to the persistent mount on each restart. Edit in git and deploy to update.
 
 ## Local Development
 
@@ -94,23 +95,9 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
 | Web search | NanoBot built-in | Included out of the box |
 | Shell | NanoBot built-in | Included out of the box |
 
-## Resources
+## Security
 
-| Component | Monthly Cost |
-|-----------|-------------|
-| Container App (1 vCPU, 2 GiB) | ~$10-15 |
-| Azure Files (50 GB) | ~$2.50 |
-| Docker Hub (free tier) | $0 |
-| **Total (excl. API)** | **~$10-15** |
-
-## Security Checklist
-
-- [ ] All secrets are env vars on the container app (never in git)
-- [ ] `.env` in `.gitignore`
-- [ ] Dedicated GitHub machine user with scoped access
-- [ ] `GH_TOKEN` is a classic PAT with scopes: `repo`, `workflow`, `read:org`
-- [ ] Docker Hub creds stored as GitHub Secrets only
-- [ ] Azure service principal scoped to the resource group
-- [ ] Anthropic API key has usage limits set
-- [ ] NanoBot version pinned in Dockerfile
-- [ ] GitHub Actions pinned to commit SHAs
+- All secrets are environment variables on the container app, never in git
+- `.env` is in `.gitignore`
+- `GH_TOKEN` is a classic PAT scoped to `repo`, `workflow`, `read:org`
+- NanoBot version and GitHub Actions are pinned in `Dockerfile` and workflows
