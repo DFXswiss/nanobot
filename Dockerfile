@@ -19,11 +19,13 @@ ARG NANOBOT_VERSION=0.1.4.post2
 RUN pip install --no-cache-dir nanobot-ai==${NANOBOT_VERSION}
 
 # Playwright + Chromium (headless browser for screenshots/scraping)
-RUN pip install --no-cache-dir playwright && \
+ARG PLAYWRIGHT_VERSION=1.58.0
+RUN pip install --no-cache-dir playwright==${PLAYWRIGHT_VERSION} && \
     playwright install chromium --with-deps
 
 # MCP filesystem server (installed globally so no npx download at runtime)
-RUN npm install -g @modelcontextprotocol/server-filesystem
+ARG MCP_FS_VERSION=2026.1.14
+RUN npm install -g @modelcontextprotocol/server-filesystem@${MCP_FS_VERSION}
 
 # Chromium needs --no-sandbox in containers (the container IS the sandbox)
 ENV PLAYWRIGHT_CHROMIUM_SANDBOX=false

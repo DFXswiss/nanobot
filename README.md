@@ -73,7 +73,7 @@ Check the container logs for `Starting nanobot gateway on port 18790...` and `Te
 ## CI/CD
 
 The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
-- Push to `main` that changes `Dockerfile` or the workflow itself
+- Push to `main` that changes `Dockerfile`, `entrypoint.sh`, `workspace/`, or the workflow itself
 - Manual dispatch
 
 **Required GitHub Secrets:**
