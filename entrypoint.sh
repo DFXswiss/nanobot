@@ -54,4 +54,16 @@ jq -n \
 # Copy workspace defaults from image (auto-deploys updates on restart)
 cp -r "$DEFAULTS_DIR/workspace/"* "$MOUNT_DIR/workspace/" 2>/dev/null || true
 
+# Health endpoint for Azure Container Apps probes (nanobot doesn't bind a port)
+python3 -c "
+from http.server import HTTPServer, BaseHTTPRequestHandler
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'ok')
+    def log_message(self, *a): pass
+HTTPServer(('0.0.0.0', 18790), H).serve_forever()
+" &
+
 exec nanobot "$@"
