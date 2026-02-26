@@ -4,7 +4,7 @@ set -e
 # Validate required environment variables
 : "${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required}"
 : "${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}"
-: "${TELEGRAM_USER_ID:?TELEGRAM_USER_ID is required}"
+: "${TELEGRAM_USER_IDS:?TELEGRAM_USER_IDS is required}"
 : "${GH_TOKEN:?GH_TOKEN is required}"
 
 MOUNT_DIR="/root/.nanobot"
@@ -12,11 +12,14 @@ DEFAULTS_DIR="/opt/nanobot/defaults"
 
 mkdir -p "$MOUNT_DIR/workspace"
 
+# Build JSON array from comma-separated user IDs
+ALLOW_FROM=$(echo "$TELEGRAM_USER_IDS" | tr ',' '\n' | jq -R . | jq -s .)
+
 # Generate config.json from environment variables (jq ensures valid JSON)
 jq -n \
   --arg api_key "$ANTHROPIC_API_KEY" \
   --arg tg_token "$TELEGRAM_BOT_TOKEN" \
-  --arg tg_user "$TELEGRAM_USER_ID" \
+  --argjson tg_users "$ALLOW_FROM" \
   --arg workspace "$MOUNT_DIR/workspace" \
   '{
     providers: { anthropic: { apiKey: $api_key } },
@@ -42,7 +45,7 @@ jq -n \
       telegram: {
         enabled: true,
         token: $tg_token,
-        allowFrom: [$tg_user]
+        allowFrom: $tg_users
       }
     },
     gateway: { host: "0.0.0.0", port: 18790 }

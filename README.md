@@ -22,7 +22,7 @@ All configuration is driven by environment variables. The entrypoint script gene
 |---------|---------|
 | `ANTHROPIC_API_KEY` | Anthropic API key |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token (from @BotFather) |
-| `TELEGRAM_USER_ID` | Telegram user ID to allow (from @userinfobot) |
+| `TELEGRAM_USER_IDS` | Comma-separated Telegram user IDs to allow (from @userinfobot) |
 | `GH_TOKEN` | GitHub PAT for `gh` CLI |
 
 ### Workspace files
