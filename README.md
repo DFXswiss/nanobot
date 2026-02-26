@@ -78,8 +78,8 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
 - Manual dispatch
 
 **Required GitHub Secrets:**
-- `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN` — Docker Hub push access
-- `AZURE_CREDENTIALS` — Service principal JSON
+- `DOCKER_USERNAME` / `DOCKER_PASSWORD` — Docker Hub push access
+- `DFX_PRD_CREDENTIALS` — Service principal JSON
 
 **Required GitHub Variables:**
 - `AZURE_CONTAINER_APP` — Container App name

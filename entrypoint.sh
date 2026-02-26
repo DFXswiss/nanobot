@@ -5,6 +5,7 @@ set -e
 : "${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required}"
 : "${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}"
 : "${TELEGRAM_USER_ID:?TELEGRAM_USER_ID is required}"
+: "${GH_TOKEN:?GH_TOKEN is required}"
 
 MOUNT_DIR="/root/.nanobot"
 DEFAULTS_DIR="/opt/nanobot/defaults"
