@@ -25,7 +25,7 @@ jq -n \
     providers: { anthropic: { apiKey: $api_key } },
     agents: {
       defaults: {
-        model: "anthropic/claude-sonnet-4-5",
+        model: "anthropic/claude-opus-4-6",
         maxTokens: 8192,
         temperature: 0.1,
         maxToolIterations: 40,
@@ -51,7 +51,7 @@ jq -n \
     gateway: { host: "0.0.0.0", port: 18790 }
   }' > "$MOUNT_DIR/config.json"
 
-# Copy workspace defaults from image (auto-deploys updates on restart)
+# Copy workspace defaults from image (auto-deploys config updates on restart)
 cp -r "$DEFAULTS_DIR/workspace/"* "$MOUNT_DIR/workspace/" 2>/dev/null || true
 
 # Health endpoint for Azure Container Apps probes (nanobot doesn't bind a port)
