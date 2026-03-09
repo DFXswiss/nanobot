@@ -15,7 +15,7 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # NanoBot (pinned version — update deliberately after testing)
-ARG NANOBOT_VERSION=0.1.4.post2
+ARG NANOBOT_VERSION=0.1.4.post4
 RUN pip install --no-cache-dir nanobot-ai==${NANOBOT_VERSION}
 
 # Playwright + Chromium (headless browser for screenshots/scraping)
