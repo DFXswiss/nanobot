@@ -2,7 +2,7 @@
 
 ## exec — Safety Limits
 
-- Commands have a configurable timeout (default 60s)
+- Commands have a 300s (5 min) timeout
 - Dangerous commands are blocked (rm -rf, format, dd, shutdown, etc.)
 - Output is truncated at 10,000 characters
 
