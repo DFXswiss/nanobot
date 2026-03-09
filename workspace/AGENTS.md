@@ -98,13 +98,24 @@ When the user asks for a recurring/periodic task, update `HEARTBEAT.md` instead 
 
 ## Memory Management
 
-MEMORY.md is for **runtime-discovered facts** — not operational rules. Don't duplicate config file instructions there.
+**Hard limits: MEMORY.md max 60 lines, HISTORY.md max 60 lines.** Enforce on every consolidation. If over limit, prune until under.
 
-**Belongs in MEMORY.md**: repo URLs, user names, project-specific context, discovered access levels, learned facts from past sessions.
+### MEMORY.md — current facts only
+- Repo URLs, access levels, active/open PRs, in-progress work
+- One line per item. No paragraphs, no implementation details, no commit hashes
+- Completed/merged PRs: one line or delete if older than 2 weeks
+- Never duplicate rules from AGENTS.md, SOUL.md, TOOLS.md, or USER.md
 
-**Does NOT belong in MEMORY.md**: workflow rules, communication style, git branching strategy, PR processes — these belong in SOUL.md, AGENTS.md, TOOLS.md, or USER.md.
+### HISTORY.md — outcomes only
+- One line per completed task: what was done + link. That's it.
+- Never include: failed attempts, subagent details, intermediate steps, file lists, retry narratives
+- Delete entries older than 2 weeks
 
-During consolidation, keep MEMORY.md lean and factual. Remove stale entries.
+### FORBIDDEN in memory files
+- Workflow rules, git strategy, communication style — these belong in config files
+- Play-by-play narratives of how work was done
+- Workspace file listings (use `ls`)
+- Detailed implementation notes for shipped features
 
 ## Resource Limits
 
