@@ -8,12 +8,15 @@
 
 ## gh — GitHub CLI
 
-Authenticated via `GH_TOKEN` environment variable.
+Authenticated via `GH_TOKEN` environment variable (already set — never pass it manually).
 
-- **Never expose tokens or secrets** — don't echo, log, print, or include in messages
-- **Never embed tokens in commands** — no `echo $TOKEN | ...`, no `GH_TOKEN="..." cmd`, no `https://user:token@github.com/...` in git URLs. Use `gh` for all authenticated operations.
-- Sanitize output before showing to users: strip tokens from URLs (git remote -v), auth status, error messages
-- If a git remote URL contains a token, don't display it
+### FORBIDDEN
+- `GH_TOKEN="..." cmd` — never inline the token
+- `echo $GH_TOKEN` or `echo $TOKEN`
+- Token in URLs: `https://user:token@github.com/...`
+- Displaying `gh auth status` output or `git remote -v` output without sanitizing
+
+If `gh` auth fails: report the error. Do NOT work around it by inlining tokens.
 
 ## git — Version Control
 

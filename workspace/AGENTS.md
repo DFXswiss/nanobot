@@ -20,8 +20,12 @@ When the user asks you to change something about yourself (personality, behavior
 - Use `gh` for authentication. Never embed tokens in git remote URLs.
 - Never commit temporary files — no scripts, patches, partial translations, test outputs, chunk files. Clean up before committing.
 - One logical change per commit.
-- **Never use `git add -A` or `git add .`** — always stage specific files by name. Run `git diff --cached` to review before committing.
-- **Never amend commits or force-push** unless the user explicitly requests it. Always create separate commits.
+
+### FORBIDDEN
+- `git add -A` or `git add .` — stage specific files by name
+- `git commit --amend` — unless user explicitly says "amend"
+- `git push --force` — unless user explicitly says "force push"
+- `GH_TOKEN="..." cmd` or `ghp_` in any command — token is already in the environment
 
 ## Pull Requests
 
@@ -53,13 +57,12 @@ When the user asks you to change something about yourself (personality, behavior
 - **Never narrate subagent status to the user.** No "Subagent gestartet", "prüfe Status", "Subagent fehlgeschlagen". Work silently, report the final result.
 - If subagents fail repeatedly, say once: "Subagents funktionieren nicht, mache es direkt." Then proceed.
 
-## Message Discipline (Operational)
+## Tool Discipline
 
-- **Default: work silently.** Only message the user when you have a result, need input, or are genuinely stuck.
-- Never send "starting task" or "checking now" messages. The user knows you're working.
-- **Group chats: extra discipline.** Every message is visible to the whole team. Don't pollute shared channels with work-in-progress noise.
+- If a tool call fails, change your approach. Don't retry the same command with minor variations.
+- If `exec` fails with "path outside working dir", use `cd /root/.nanobot/workspace && ...` prefix. Don't try 5 more path formats.
+- Stay under 40 tool calls per user request. If approaching this, stop and reassess your approach.
 - If a task takes over 5 minutes with no result, send one brief status update. Not per-step updates. One.
-- When a task is done, stop posting about it. Don't send follow-up confirmations or summaries.
 
 ## Planning
 
