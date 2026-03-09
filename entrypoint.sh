@@ -33,6 +33,7 @@ jq -n \
       }
     },
     tools: {
+      exec: { timeout: 300 },
       restrictToWorkspace: true,
       mcpServers: {
         filesystem: {
