@@ -20,8 +20,12 @@ When the user asks you to change something about yourself (personality, behavior
 - Use `gh` for authentication. Never embed tokens in git remote URLs.
 - Never commit temporary files — no scripts, patches, partial translations, test outputs, chunk files. Clean up before committing.
 - One logical change per commit.
-- **Never use `git add -A` or `git add .`** — always stage specific files by name. Run `git diff --cached` to review before committing.
-- **Never amend commits or force-push** unless the user explicitly requests it. Always create separate commits.
+
+### FORBIDDEN
+- `git add -A` or `git add .` — stage specific files by name
+- `git commit --amend` — unless user explicitly says "amend"
+- `git push --force` — unless user explicitly says "force push"
+- `GH_TOKEN="..." cmd` or `ghp_` in any command — token is already in the environment
 
 ## Pull Requests
 
@@ -53,13 +57,12 @@ When the user asks you to change something about yourself (personality, behavior
 - **Never narrate subagent status to the user.** No "Subagent gestartet", "prüfe Status", "Subagent fehlgeschlagen". Work silently, report the final result.
 - If subagents fail repeatedly, say once: "Subagents funktionieren nicht, mache es direkt." Then proceed.
 
-## Message Discipline (Operational)
+## Tool Discipline
 
-- **Default: work silently.** Only message the user when you have a result, need input, or are genuinely stuck.
-- Never send "starting task" or "checking now" messages. The user knows you're working.
-- **Group chats: extra discipline.** Every message is visible to the whole team. Don't pollute shared channels with work-in-progress noise.
+- If a tool call fails, change your approach. Don't retry the same command with minor variations.
+- If `exec` fails with "path outside working dir", use `cd /root/.nanobot/workspace && ...` prefix. Don't try 5 more path formats.
+- Stay under 40 tool calls per user request. If approaching this, stop and reassess your approach.
 - If a task takes over 5 minutes with no result, send one brief status update. Not per-step updates. One.
-- When a task is done, stop posting about it. Don't send follow-up confirmations or summaries.
 
 ## Planning
 
@@ -95,13 +98,24 @@ When the user asks for a recurring/periodic task, update `HEARTBEAT.md` instead 
 
 ## Memory Management
 
-MEMORY.md is for **runtime-discovered facts** — not operational rules. Don't duplicate config file instructions there.
+**Hard limits: MEMORY.md max 60 lines, HISTORY.md max 60 lines.** Enforce on every consolidation. If over limit, prune until under.
 
-**Belongs in MEMORY.md**: repo URLs, user names, project-specific context, discovered access levels, learned facts from past sessions.
+### MEMORY.md — current facts only
+- Repo URLs, access levels, active/open PRs, in-progress work
+- One line per item. No paragraphs, no implementation details, no commit hashes
+- Completed/merged PRs: one line or delete if older than 2 weeks
+- Never duplicate rules from AGENTS.md, SOUL.md, TOOLS.md, or USER.md
 
-**Does NOT belong in MEMORY.md**: workflow rules, communication style, git branching strategy, PR processes — these belong in SOUL.md, AGENTS.md, TOOLS.md, or USER.md.
+### HISTORY.md — outcomes only
+- One line per completed task: what was done + link. That's it.
+- Never include: failed attempts, subagent details, intermediate steps, file lists, retry narratives
+- Delete entries older than 2 weeks
 
-During consolidation, keep MEMORY.md lean and factual. Remove stale entries.
+### FORBIDDEN in memory files
+- Workflow rules, git strategy, communication style — these belong in config files
+- Play-by-play narratives of how work was done
+- Workspace file listings (use `ls`)
+- Detailed implementation notes for shipped features
 
 ## Resource Limits
 

@@ -3,7 +3,7 @@
 ## Team
 
 - **Organization**: DFX Swiss AG
-- **Language**: German — Telegram chats are always in German
+- **Language**: German — every Telegram message, always, no exceptions
 - **Timezone**: CET (UTC+1)
 
 ## Preferences
