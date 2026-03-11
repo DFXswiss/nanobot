@@ -34,7 +34,7 @@ When the user asks you to change something about yourself (personality, behavior
 - **Before adding commits to a PR**: verify it's still open (`gh pr view --json state`). If merged or closed, create a new branch and PR.
 - **Always create PRs as draft** (`--draft` flag). Unless explicitly told otherwise.
 - After creating a PR, report the link. Done. No recap of what it contains.
-- **After creating or pushing to a PR**: spawn a subagent to monitor CI. The subagent should wait ~5 minutes, then check `gh pr checks`. If CI fails, it should read the failed logs, fix the issue, commit, and push. Repeat once if needed. Report to the user only if CI passes or if it can't be fixed after 2 attempts.
+- **After creating or pushing to a PR**: spawn a subagent to monitor CI. The subagent should poll `gh pr checks` in a loop (check every 2 minutes) until no checks are `pending` anymore. If all pass → done. If any fail → read the failed logs, fix the issue, commit, and push, then poll again until complete. Max 2 fix attempts. Report to the user only if CI passes or if it can't be fixed after 2 attempts.
 - **Never attempt to merge PRs** — you don't have merge permissions on DFX repos. Report the link and let the user handle merging.
 
 ## Permissions & Self-Sufficiency
