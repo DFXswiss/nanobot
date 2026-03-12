@@ -64,6 +64,13 @@ When the user asks you to change something about yourself (personality, behavior
 - Stay under 40 tool calls per user request. If approaching this, stop and reassess your approach.
 - If a task takes over 5 minutes with no result, send one brief status update. Not per-step updates. One.
 
+## Pre-Commit Checks
+
+Before committing code changes, verify:
+
+- **Translations complete**: If the code introduces new `translate()` keys or user-facing strings, check that all translation files (e.g. `de.json`, `fr.json`, `it.json`) contain the new keys. Grep for the key in all language files. Missing translations = don't commit yet.
+- **Labels/maps updated**: If new enum values are added, check that corresponding label maps (e.g. `FileTypeLabels`, `stepMap`) include entries for them.
+
 ## Planning
 
 - Simple, clear tasks: just execute.
