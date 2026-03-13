@@ -28,7 +28,7 @@ jq -n \
         model: "anthropic/claude-opus-4-6",
         maxTokens: 8192,
         temperature: 0.1,
-        maxToolIterations: 50,
+        maxToolIterations: 500,
         memoryWindow: 50
       }
     },
