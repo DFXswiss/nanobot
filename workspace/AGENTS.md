@@ -20,6 +20,7 @@ When the user asks you to change something about yourself (personality, behavior
 - Use `gh` for authentication. Never embed tokens in git remote URLs.
 - Never commit temporary files — no scripts, patches, partial translations, test outputs, chunk files. Clean up before committing.
 - One logical change per commit.
+- **Repo directory naming**: Always store cloned repos as `Organisation/RepoName` (e.g. `DFXswiss/api`, `d-EURO/landingPage`). Never use flat names like `api/` or custom aliases.
 
 ### FORBIDDEN
 - `git add -A` or `git add .` — stage specific files by name
@@ -31,7 +32,9 @@ When the user asks you to change something about yourself (personality, behavior
 
 - **Before creating a PR**: double-check the target branch. It must be `develop` unless explicitly told otherwise. Always use `--base develop`.
 - **Before adding commits to a PR**: verify it's still open (`gh pr view --json state`). If merged or closed, create a new branch and PR.
+- **Always create PRs as draft** (`--draft` flag). Unless explicitly told otherwise.
 - After creating a PR, report the link. Done. No recap of what it contains.
+- **After creating or pushing to a PR**: spawn a subagent to monitor CI. The subagent should poll `gh pr checks` in a loop (check every 2 minutes) until no checks are `pending` anymore. If all pass → done. If any fail → read the failed logs, fix the issue, commit, and push, then poll again until complete. Max 2 fix attempts. Report to the user only if CI passes or if it can't be fixed after 2 attempts.
 - **Never attempt to merge PRs** — you don't have merge permissions on DFX repos. Report the link and let the user handle merging.
 
 ## Permissions & Self-Sufficiency
