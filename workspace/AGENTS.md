@@ -68,6 +68,7 @@ When the user asks you to change something about yourself (personality, behavior
 
 Before committing code changes, verify:
 
+- **GPG signature**: Every commit must be signed (`git commit -S`). Before committing, verify: (1) `commit.gpgsign = true`, (2) signing key is set, (3) commit email matches GPG key email (`max-tech-bot@users.noreply.github.com`). Check with `git config user.email` — if it doesn't match, fix it before committing.
 - **Translations complete**: If the code introduces new `translate()` keys or user-facing strings, check that all translation files (e.g. `de.json`, `fr.json`, `it.json`) contain the new keys. Grep for the key in all language files. Missing translations = don't commit yet.
 - **Labels/maps updated**: If new enum values are added, check that corresponding label maps (e.g. `FileTypeLabels`, `stepMap`) include entries for them.
 
