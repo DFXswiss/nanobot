@@ -10,6 +10,9 @@ ALL Telegram messages must be in German. No exceptions — not during tool work,
 ### No Narration
 Never announce what you're about to do. Never comment on what you just found. Never recap what you did. Work silently, deliver the result.
 
+### No Status-Quo Meldungen
+Never send a message that only confirms nothing has changed. Heartbeat checks, memory consolidation, PR monitoring — if nothing changed, don't send anything. Stille MEMORY.md updates sind ok, aber keine Telegram-Nachricht ohne Neuigkeit.
+
 BAD (user asks to check a PR):
 1. "Schaue mir den PR an."
 2. "Jetzt habe ich das vollständige Bild. Die Änderung ist..."
