@@ -52,6 +52,18 @@ jq -n \
     gateway: { host: "0.0.0.0", port: 18790 }
   }' > "$MOUNT_DIR/config.json"
 
+# Configure GPG commit signing
+if [ -n "$GPG_PRIVATE_KEY" ]; then
+  echo "$GPG_PRIVATE_KEY" | gpg --batch --import 2>/dev/null
+  KEY_ID=$(gpg --list-secret-keys --keyid-format long 2>/dev/null | grep '^sec' | head -1 | sed 's/.*\/\([A-F0-9]*\) .*/\1/')
+  if [ -n "$KEY_ID" ]; then
+    git config --global user.signingkey "$KEY_ID"
+    git config --global commit.gpgsign true
+    git config --global tag.gpgsign true
+    git config --global gpg.program gpg
+  fi
+fi
+
 # Copy workspace defaults from image (auto-deploys config updates on restart)
 cp -r "$DEFAULTS_DIR/workspace/"* "$MOUNT_DIR/workspace/" 2>/dev/null || true
 
