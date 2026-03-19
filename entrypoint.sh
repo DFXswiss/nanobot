@@ -21,11 +21,12 @@ jq -n \
   --arg tg_token "$TELEGRAM_BOT_TOKEN" \
   --argjson tg_users "$ALLOW_FROM" \
   --arg workspace "$MOUNT_DIR/workspace" \
+  --arg model "${AI_MODEL:-anthropic/claude-opus-4-6}" \
   '{
     providers: { anthropic: { apiKey: $api_key } },
     agents: {
       defaults: {
-        model: "anthropic/claude-opus-4-6",
+        model: $model,
         maxTokens: 8192,
         temperature: 0.1,
         maxToolIterations: 100,
