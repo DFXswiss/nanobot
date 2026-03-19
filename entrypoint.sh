@@ -29,7 +29,7 @@ jq -n \
         maxTokens: 8192,
         temperature: 0.1,
         maxToolIterations: 100,
-        memoryWindow: 50
+        contextWindowTokens: 200000
       }
     },
     tools: {
