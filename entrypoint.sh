@@ -65,7 +65,12 @@ if [ -n "$GPG_PRIVATE_KEY" ]; then
   fi
 fi
 
-# Copy workspace defaults from image (auto-deploys config updates on restart)
-cp -r "$DEFAULTS_DIR/workspace/"* "$MOUNT_DIR/workspace/" 2>/dev/null || true
+# Copy workspace files from operator profile (if mounted via BOT_PROFILE_DIR)
+# or fall back to the image's placeholder defaults.
+PROFILE_SRC="$DEFAULTS_DIR/workspace"
+if [ -n "${BOT_PROFILE_DIR:-}" ] && [ -d "$BOT_PROFILE_DIR" ]; then
+  PROFILE_SRC="$BOT_PROFILE_DIR"
+fi
+cp -r "$PROFILE_SRC"/* "$MOUNT_DIR/workspace/" 2>/dev/null || true
 
 exec nanobot "$@"

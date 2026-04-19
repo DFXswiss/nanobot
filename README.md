@@ -26,19 +26,36 @@ All configuration is driven by environment variables. The entrypoint script gene
 | `GH_TOKEN` | GitHub PAT for `gh` CLI |
 | `AI_MODEL` | Optional: override default model (`anthropic/claude-opus-4-6`) |
 | `GPG_PRIVATE_KEY` | Optional: ASCII-armored private key for commit signing |
+| `BOT_PROFILE_DIR` | Optional: path to an operator-supplied profile directory (see below). Defaults to the image's placeholder `workspace/`. |
 
-### Workspace files
+### Workspace / Profile files
 
-NanoBot loads these markdown files from `workspace/` into every system prompt:
+NanoBot loads these four markdown files into every system prompt:
 
 | File | Purpose |
 |------|---------|
 | `SOUL.md` | Personality, values, communication style |
-| `AGENTS.md` | Operational behavior (cron, heartbeat, resource limits) |
+| `AGENTS.md` | Operational behavior (cron, heartbeat, memory limits) |
 | `TOOLS.md` | Tool-specific constraints and safety notes |
-| `USER.md` | Team profile and preferences |
+| `USER.md` | User/team profile and preferences |
 
-These are baked into the image and copied to the persistent mount on each restart. Edit in git and deploy to update.
+The image ships placeholder versions in `/opt/nanobot/defaults/workspace/`. On every container start the entrypoint copies files from a **profile source** into the persistent `/root/.nanobot/workspace/` mount. The profile source is:
+
+1. The path in `BOT_PROFILE_DIR` if that environment variable is set and the directory exists — typically mounted read-only from the host so the operator can keep their bot's persona out of this repo.
+2. Otherwise the image's placeholder `workspace/`.
+
+Example (Docker Compose):
+
+```yaml
+nanobot-mybot:
+  image: dfxswiss/nanobot:latest
+  env_file: ./mybot.env
+  environment:
+    BOT_PROFILE_DIR: /opt/nanobot/profile
+  volumes:
+    - mybot-data:/root/.nanobot
+    - ./profiles/mybot:/opt/nanobot/profile:ro
+```
 
 ## Local Development
 
