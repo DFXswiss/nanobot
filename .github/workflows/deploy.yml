@@ -15,9 +15,6 @@ permissions:
 
 env:
   DOCKER_IMAGE: dfxswiss/nanobot
-  AZURE_RESOURCE_GROUP: rg-dfx-api-prd
-  AZURE_CONTAINER_APP: ca-dfx-nbt-prd
-  DEPLOY_INFO: ${{ github.ref_name }}-${{ github.sha }}
 
 jobs:
   build-and-deploy:
@@ -47,37 +44,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Azure Login
-        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2
-        with:
-          creds: ${{ secrets.DFX_PRD_CREDENTIALS }}
-
-      - name: Get current revision
-        id: previous
+      # Trigger deploy-infrastructure.yml im DFXswiss/server. Der Runner auf
+      # dfx01 pullt :latest (pull_policy: always) und rollt alle
+      # nanobot-Instanzen aus.
+      - name: Trigger dfx01 redeploy
+        env:
+          GH_TOKEN: ${{ secrets.SERVER_REPO_DISPATCH_TOKEN }}
         run: |
-          REVISION=$(az containerapp revision list \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_CONTAINER_APP }} \
-            --query "[?properties.active].name" \
-            --output tsv | head -1)
-          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
-
-      - name: Update Container App
-        run: |
-          az containerapp update \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_CONTAINER_APP }} \
-            --image ${{ env.DOCKER_IMAGE }}:${{ github.sha }} \
-            --set-env-vars DEPLOY_INFO=${{ env.DEPLOY_INFO }}
-
-      - name: Deactivate previous revision
-        if: steps.previous.outputs.revision != ''
-        run: |
-          az containerapp revision deactivate \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_CONTAINER_APP }} \
-            --revision ${{ steps.previous.outputs.revision }}
-
-      - name: Logout from Azure
-        run: az logout
-        if: always()
+          gh api repos/DFXswiss/server/dispatches \
+            -f event_type=dfx01-stack-redeploy \
+            -f "client_payload[stack]=nanobot" \
+            -f "client_payload[image_sha]=${{ github.sha }}"

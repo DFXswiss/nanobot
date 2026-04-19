@@ -1,15 +1,15 @@
 # NanoBot — DFX AI Assistant
 
-Always-on AI assistant running in Azure Container Apps, connected via Telegram.
+Always-on AI assistant running on dfx01 (Docker), connected via Telegram.
 
 ## Architecture
 
-NanoBot runs `nanobot gateway` (port 18790) in an Azure Container App, maintaining an outbound WebSocket to Telegram. An Azure file share is mounted for persistent workspace data (cloned repos, session state).
+NanoBot runs `nanobot gateway` inside Docker on dfx01, maintaining an outbound WebSocket to Telegram. A named volume (`nanobot-<name>-data`) is mounted at `/root/.nanobot` for persistent workspace data (cloned repos, session state). Multiple instances run side by side — one Compose service per bot. The stack lives in [`DFXswiss/server`](https://github.com/DFXswiss/server) under `infrastructure/dfx01/nanobot/`.
 
 ## Prerequisites
 
-- Azure Container Apps environment
-- Docker Hub organization access
+- dfx01 with Docker (Colima)
+- Docker Hub push access for `dfxswiss/nanobot`
 - Telegram bot token (from @BotFather)
 - Anthropic API key
 - GitHub PAT with `repo` scope
@@ -54,32 +54,19 @@ docker compose logs -f gateway
 docker compose run --rm cli status
 ```
 
-## Azure Deployment
+## Deployment (dfx01)
 
-### Step 1: Build and Push Docker Image
+Two-stage pipeline:
 
-```bash
-docker build -t dfxswiss/nanobot:latest .
-docker push dfxswiss/nanobot:latest
-```
+1. **Image build** — this repo's `deploy.yml` builds `dfxswiss/nanobot:<sha>` + `:latest`, pushes to Docker Hub, then fires a `repository_dispatch` (`event_type: dfx01-stack-redeploy`, `stack: nanobot`) at `DFXswiss/server`.
+2. **Stack deploy** — the self-hosted Runner on dfx01 reacts to that event, rsyncs `infrastructure/dfx01/nanobot/` to `/Users/dfx01/docker/nanobot/`, and runs `docker compose up -d --remove-orphans`. `pull_policy: always` in the compose file ensures every instance picks up the new `:latest`.
 
-### Step 2: Azure Setup
+Adding a new NanoBot instance is a commit in `DFXswiss/server` only — no change in this repo needed. See `infrastructure/dfx01/nanobot/README.md` there.
 
-One-time setup: create the container app, mount a file share at `/root/.nanobot`, and set the environment variables listed above. See internal documentation for resource names.
+### Required GitHub Secrets (this repo)
 
-### Step 3: Verify
-
-Check the container logs for `Starting nanobot gateway on port 18790...` and `Telegram channel enabled`. Then send a test message to your bot on Telegram.
-
-## CI/CD
-
-The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
-- Push to `main` that changes `Dockerfile`, `entrypoint.sh`, `workspace/`, or the workflow itself
-- Manual dispatch
-
-**Required GitHub Secrets:**
-- `DOCKER_USERNAME` / `DOCKER_PASSWORD` — Docker Hub push access
-- `DFX_PRD_CREDENTIALS` — Service principal JSON
+- `DOCKER_USERNAME` / `DOCKER_PASSWORD` — Docker Hub push access (org `dfxswiss`)
+- `SERVER_REPO_DISPATCH_TOKEN` — classic PAT with `repo` scope to trigger the `DFXswiss/server` workflow
 
 ## Tools
 
@@ -93,7 +80,7 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
 
 ## Security
 
-- All secrets are environment variables on the container app, never in git
-- `.env` is in `.gitignore`
+- All secrets are env vars on the container, never in git
+- `.env` is in `.gitignore` (local dev only); dfx01 `.env` files live at `/Users/dfx01/docker/nanobot/nanobot-<name>.env`, managed by the admin, sourced from Vaultwarden
 - `GH_TOKEN` is a classic PAT scoped to `repo`, `workflow`, `read:org`
 - NanoBot version and GitHub Actions are pinned in `Dockerfile` and workflows
