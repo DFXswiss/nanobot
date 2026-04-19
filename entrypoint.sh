@@ -26,6 +26,17 @@ else
   TOOLS_EXEC='null'
 fi
 
+# Optional MCP servers in addition to the built-in filesystem server.
+# Format: a JSON object, e.g.
+#   MCP_EXTRA_SERVERS='{"normen": {"url": "http://rag:8765/mcp"}}'
+# Passed through verbatim into tools.mcpServers (merged, filesystem wins on collision).
+EXTRA_MCP_SERVERS="${MCP_EXTRA_SERVERS:-{\}}"
+# Validate — fail fast if the caller supplied something that isn't valid JSON.
+echo "$EXTRA_MCP_SERVERS" | jq -e type > /dev/null || {
+  echo "MCP_EXTRA_SERVERS is not valid JSON: $EXTRA_MCP_SERVERS" >&2
+  exit 1
+}
+
 # Generate config.json from environment variables (jq ensures valid JSON)
 jq -n \
   --arg api_key "$ANTHROPIC_API_KEY" \
@@ -34,6 +45,7 @@ jq -n \
   --arg mcp_path "$MCP_PATH" \
   --arg model "${AI_MODEL:-anthropic/claude-opus-4-6}" \
   --argjson exec_tool "$TOOLS_EXEC" \
+  --argjson extra_mcp "$EXTRA_MCP_SERVERS" \
   '{
     providers: { anthropic: { apiKey: $api_key } },
     agents: {
@@ -47,12 +59,12 @@ jq -n \
     },
     tools: ({
       restrictToWorkspace: true,
-      mcpServers: {
+      mcpServers: ({
         filesystem: {
           command: "mcp-server-filesystem",
           args: [$mcp_path]
         }
-      }
+      } + $extra_mcp)
     } + if $exec_tool != null then { exec: $exec_tool } else {} end),
     channels: {
       telegram: {

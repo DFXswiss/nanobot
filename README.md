@@ -27,6 +27,7 @@ All configuration is driven by environment variables. The entrypoint script gene
 | `AI_MODEL` | Optional: override default model (`anthropic/claude-opus-4-6`) |
 | `GPG_PRIVATE_KEY` | Optional: ASCII-armored private key for commit signing |
 | `BOT_PROFILE_DIR` | Optional: path to an operator-supplied profile directory (see below). Defaults to the image's placeholder `workspace/`. |
+| `MCP_EXTRA_SERVERS` | Optional: JSON object merged into `tools.mcpServers`. Example: `{"rag": {"url": "http://rag:8765/mcp"}}`. Built-in `filesystem` server always wins on key collision. |
 
 ### Workspace / Profile files
 
