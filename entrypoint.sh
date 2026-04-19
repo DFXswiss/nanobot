@@ -68,16 +68,4 @@ fi
 # Copy workspace defaults from image (auto-deploys config updates on restart)
 cp -r "$DEFAULTS_DIR/workspace/"* "$MOUNT_DIR/workspace/" 2>/dev/null || true
 
-# Disable prompt caching — Anthropic API rejects cache_control since 2026-03-17
-# for certain auth paths. Remove this workaround when nanobot upstream fixes it.
-python3 -c "
-import nanobot.providers.litellm_provider as p
-src = open(p.__file__).read()
-src = src.replace(
-    'return spec is not None and spec.supports_prompt_caching',
-    'return False  # PATCHED: cache_control rejected by Anthropic API'
-)
-open(p.__file__, 'w').write(src)
-" 2>/dev/null || true
-
 exec nanobot "$@"
