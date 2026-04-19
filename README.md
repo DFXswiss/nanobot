@@ -1,15 +1,15 @@
-# NanoBot — DFX AI Assistant
+# NanoBot — AI Assistant
 
-Always-on AI assistant running in Azure Container Apps, connected via Telegram.
+Always-on AI assistant running in Docker, connected via Telegram.
 
 ## Architecture
 
-NanoBot runs `nanobot gateway` (port 18790) in an Azure Container App, maintaining an outbound WebSocket to Telegram. An Azure file share is mounted for persistent workspace data (cloned repos, session state).
+NanoBot runs `nanobot gateway` inside a Docker container, maintaining an outbound WebSocket to Telegram. A named volume mounted at `/root/.nanobot` holds persistent workspace data (cloned repos, session state). Multiple instances can run side by side — one Compose service per bot.
 
 ## Prerequisites
 
-- Azure Container Apps environment
-- Docker Hub organization access
+- Docker + Docker Compose
+- Docker Hub push access for the image registry used
 - Telegram bot token (from @BotFather)
 - Anthropic API key
 - GitHub PAT with `repo` scope
@@ -24,6 +24,8 @@ All configuration is driven by environment variables. The entrypoint script gene
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token (from @BotFather) |
 | `TELEGRAM_USER_IDS` | Comma-separated Telegram user IDs to allow (from @userinfobot) |
 | `GH_TOKEN` | GitHub PAT for `gh` CLI |
+| `AI_MODEL` | Optional: override default model (`anthropic/claude-opus-4-6`) |
+| `GPG_PRIVATE_KEY` | Optional: ASCII-armored private key for commit signing |
 
 ### Workspace files
 
@@ -54,32 +56,23 @@ docker compose logs -f gateway
 docker compose run --rm cli status
 ```
 
-## Azure Deployment
+## Deployment
 
-### Step 1: Build and Push Docker Image
+Image build and deploy are decoupled:
 
-```bash
-docker build -t dfxswiss/nanobot:latest .
-docker push dfxswiss/nanobot:latest
-```
-
-### Step 2: Azure Setup
-
-One-time setup: create the container app, mount a file share at `/root/.nanobot`, and set the environment variables listed above. See internal documentation for resource names.
-
-### Step 3: Verify
-
-Check the container logs for `Starting nanobot gateway on port 18790...` and `Telegram channel enabled`. Then send a test message to your bot on Telegram.
+1. The GitHub Actions workflow (`.github/workflows/deploy.yml`) builds `nanobot:<sha>` and `nanobot:latest`, pushes to the configured registry, then triggers a `repository_dispatch` at the downstream infrastructure repo so it can pull the new image and restart.
+2. The downstream repo is responsible for the Compose stack and per-instance `.env` files — this repo has no deployment targets hard-coded.
 
 ## CI/CD
 
-The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
+The workflow triggers on:
 - Push to `main` that changes `Dockerfile`, `entrypoint.sh`, `workspace/`, or the workflow itself
 - Manual dispatch
 
 **Required GitHub Secrets:**
-- `DOCKER_USERNAME` / `DOCKER_PASSWORD` — Docker Hub push access
-- `DFX_PRD_CREDENTIALS` — Service principal JSON
+- `DOCKER_USERNAME` / `DOCKER_PASSWORD` — registry push access
+- `DISPATCH_REPO` — downstream repo (`owner/name`) to notify on image push
+- `DISPATCH_TOKEN` — PAT with `repo` scope on `DISPATCH_REPO`
 
 ## Tools
 
@@ -93,7 +86,7 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) triggers on:
 
 ## Security
 
-- All secrets are environment variables on the container app, never in git
+- All secrets are env vars on the container, never in git
 - `.env` is in `.gitignore`
 - `GH_TOKEN` is a classic PAT scoped to `repo`, `workflow`, `read:org`
 - NanoBot version and GitHub Actions are pinned in `Dockerfile` and workflows
