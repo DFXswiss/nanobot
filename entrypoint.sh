@@ -4,8 +4,8 @@ set -e
 # Validate required environment variables
 : "${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required}"
 : "${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}"
-: "${TELEGRAM_USER_IDS:?TELEGRAM_USER_IDS is required}"
-: "${GH_TOKEN:?GH_TOKEN is required}"
+: "${TELEGRAM_USER_IDS:?TELEGRAM_USER_IDS is required (use * for public)}"
+# GH_TOKEN is optional — instances that don't interact with GitHub can omit it.
 
 MOUNT_DIR="/root/.nanobot"
 DEFAULTS_DIR="/opt/nanobot/defaults"
