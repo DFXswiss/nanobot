@@ -15,13 +15,25 @@ mkdir -p "$MOUNT_DIR/workspace"
 # Build JSON array from comma-separated user IDs
 ALLOW_FROM=$(echo "$TELEGRAM_USER_IDS" | tr ',' '\n' | jq -R . | jq -s .)
 
+# Configurable tool settings (override via environment)
+MCP_PATH="${MCP_FILESYSTEM_PATH:-$MOUNT_DIR/workspace}"
+EXEC_TOOL="${EXEC_ENABLED:-true}"
+
+# Build tools object conditionally (exec can be disabled for public-facing bots)
+if [ "$EXEC_TOOL" = "true" ]; then
+  TOOLS_EXEC='{ timeout: 300 }'
+else
+  TOOLS_EXEC='null'
+fi
+
 # Generate config.json from environment variables (jq ensures valid JSON)
 jq -n \
   --arg api_key "$ANTHROPIC_API_KEY" \
   --arg tg_token "$TELEGRAM_BOT_TOKEN" \
   --argjson tg_users "$ALLOW_FROM" \
-  --arg workspace "$MOUNT_DIR/workspace" \
+  --arg mcp_path "$MCP_PATH" \
   --arg model "${AI_MODEL:-anthropic/claude-opus-4-6}" \
+  --argjson exec_tool "$TOOLS_EXEC" \
   '{
     providers: { anthropic: { apiKey: $api_key } },
     agents: {
@@ -33,16 +45,15 @@ jq -n \
         contextWindowTokens: 200000
       }
     },
-    tools: {
-      exec: { timeout: 300 },
+    tools: ({
       restrictToWorkspace: true,
       mcpServers: {
         filesystem: {
           command: "mcp-server-filesystem",
-          args: [$workspace]
+          args: [$mcp_path]
         }
       }
-    },
+    } + if $exec_tool != null then { exec: $exec_tool } else {} end),
     channels: {
       telegram: {
         enabled: true,
