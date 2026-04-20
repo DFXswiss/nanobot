@@ -21,7 +21,7 @@ EXEC_TOOL="${EXEC_ENABLED:-true}"
 
 # Build tools object conditionally (exec can be disabled for public-facing bots)
 if [ "$EXEC_TOOL" = "true" ]; then
-  TOOLS_EXEC='{ timeout: 300 }'
+  TOOLS_EXEC='{"timeout":300}'
 else
   TOOLS_EXEC='null'
 fi
