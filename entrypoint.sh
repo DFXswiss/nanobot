@@ -59,12 +59,12 @@ jq -n \
     },
     tools: ({
       restrictToWorkspace: true,
-      mcpServers: ({
+      mcpServers: ($extra_mcp + {
         filesystem: {
           command: "mcp-server-filesystem",
           args: [$mcp_path]
         }
-      } + $extra_mcp)
+      })
     } + if $exec_tool != null then { exec: $exec_tool } else {} end),
     channels: {
       telegram: {
