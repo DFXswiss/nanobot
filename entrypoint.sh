@@ -19,6 +19,14 @@ ALLOW_FROM=$(echo "$TELEGRAM_USER_IDS" | tr ',' '\n' | jq -R . | jq -s .)
 MCP_PATH="${MCP_FILESYSTEM_PATH:-$MOUNT_DIR/workspace}"
 EXEC_TOOL="${EXEC_ENABLED:-true}"
 
+# Telegram group policy: "mention" (default — only @mentions trigger the bot)
+# or "open" (every group message triggers). DM is unaffected by this setting.
+GROUP_POLICY="${TELEGRAM_GROUP_POLICY:-mention}"
+case "$GROUP_POLICY" in
+  mention|open) ;;
+  *) echo "TELEGRAM_GROUP_POLICY must be 'mention' or 'open' (got: $GROUP_POLICY)" >&2; exit 1 ;;
+esac
+
 # Build tools object conditionally (exec can be disabled for public-facing bots)
 if [ "$EXEC_TOOL" = "true" ]; then
   TOOLS_EXEC='{"timeout":300}'
@@ -31,6 +39,7 @@ jq -n \
   --arg api_key "$ANTHROPIC_API_KEY" \
   --arg tg_token "$TELEGRAM_BOT_TOKEN" \
   --argjson tg_users "$ALLOW_FROM" \
+  --arg tg_group_policy "$GROUP_POLICY" \
   --arg mcp_path "$MCP_PATH" \
   --arg model "${AI_MODEL:-anthropic/claude-opus-4-6}" \
   --argjson exec_tool "$TOOLS_EXEC" \
@@ -58,7 +67,8 @@ jq -n \
       telegram: {
         enabled: true,
         token: $tg_token,
-        allowFrom: $tg_users
+        allowFrom: $tg_users,
+        groupPolicy: $tg_group_policy
       }
     },
     gateway: { host: "0.0.0.0", port: 18790 }

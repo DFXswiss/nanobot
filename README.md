@@ -27,6 +27,7 @@ All configuration is driven by environment variables. The entrypoint script gene
 | `AI_MODEL` | Optional: override default model (`anthropic/claude-opus-4-6`) |
 | `GPG_PRIVATE_KEY` | Optional: ASCII-armored private key for commit signing |
 | `BOT_PROFILE_DIR` | Optional: path to an operator-supplied profile directory (see below). Defaults to the image's placeholder `workspace/`. |
+| `TELEGRAM_GROUP_POLICY` | Optional: `mention` (default — only @mentions trigger the bot in group chats) or `open` (every group message triggers). DMs always work. For `open` to take effect, BotFather group privacy must also be disabled (`/setprivacy` → Disable, then re-add the bot to the group). |
 
 ### Workspace / Profile files
 
