@@ -19,7 +19,7 @@ ARG NANOBOT_VERSION=0.1.5.post1
 RUN pip install --no-cache-dir nanobot-ai==${NANOBOT_VERSION}
 
 # Playwright + Chromium (headless browser for screenshots/scraping)
-ARG PLAYWRIGHT_VERSION=1.58.0
+ARG PLAYWRIGHT_VERSION=1.64.1
 RUN pip install --no-cache-dir playwright==${PLAYWRIGHT_VERSION} && \
     playwright install chromium --with-deps
 
